@@ -1,0 +1,1628 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BLSD — Your Burger Dealer · Menu Ufficiale</title>
+<meta name="description" content="BLSD — il tuo burger dealer. Menu ufficiale: smash burger, fries, sides e fake meat. Prezzi, boost e contatti.">
+<meta property="og:title" content="BLSD — Your Burger Dealer">
+<meta property="og:description" content="Smash burger, fries illegali di gusto e salse senza ricetta. Sfoglia il menu ufficiale.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0b0b0b">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230b0b0b'/%3E%3Ctext x='30' y='45' font-family='Arial Black,Arial' font-size='36' font-weight='900' fill='%23e5231f' text-anchor='middle'%3EB%3C/text%3E%3Ccircle cx='49' cy='15' r='7' fill='%23ffcf13'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<link rel="preload" as="image" href="assets/burger.webp" type="image/webp">
+  <script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<style>
+  :root{
+    --red:#e5231f;
+    --red-deep:#a3140f;
+    --black:#0b0b0b;
+    --ink:#151210;
+    --paper:#f4ecd8;
+    --yellow:#ffcf13;
+    --green:#b9ff9c;
+    --chrome-a:#8ff2e0;
+    --gap:clamp(1.25rem, 4vw, 3rem);
+    --maxw:1180px;
+    --shadow-hard:4px 4px 0 var(--red);
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:auto;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--black);
+    color:var(--paper);
+    font-family:'Space Grotesk', sans-serif;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--yellow); color:var(--black);}
+
+  h1,h2,h3, .display{
+    font-family:'Anton', sans-serif;
+    font-weight:400;
+    letter-spacing:0.01em;
+    line-height:0.9;
+    margin:0;
+    text-transform:uppercase;
+  }
+  .mono{font-family:'Space Mono', monospace;}
+
+  a{color:inherit;}
+  a:focus-visible, button:focus-visible{outline:2px solid var(--yellow); outline-offset:3px;}
+
+  /* ---------- overflow safety (fix scroll orizzontale) ---------- */
+html,body{overflow-x:clip;}
+img,svg{max-width:100%;}
+.ticker-zone{overflow:hidden;}
+
+/* ---------- logo cliccabile ---------- */
+a.brandmark{text-decoration:none;}
+a.brandmark:hover{color:var(--yellow);}
+
+/* ---------- hamburger / menu mobile ---------- */
+.burger-btn{display:none;flex-direction:column;justify-content:center;gap:5px;background:none;border:2px solid rgba(244,236,216,.3);border-radius:6px;padding:.65rem .6rem;cursor:pointer;}
+.burger-btn span{display:block;width:20px;height:2px;background:var(--paper);transition:transform .3s ease,opacity .3s ease;}
+.burger-btn.active span:nth-child(1){transform:translateY(7px) rotate(45deg);}
+.burger-btn.active span:nth-child(2){opacity:0;}
+.burger-btn.active span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
+@media (max-width:760px){ .burger-btn{display:flex;} }
+#mobileMenu{position:fixed;inset:0;z-index:45;background:rgba(11,11,11,.97);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;transform:translateY(-102%);transition:transform .45s cubic-bezier(.7,0,.2,1);}
+#mobileMenu.open{transform:translateY(0);}
+.mobile-nav{display:flex;flex-direction:column;gap:1.4rem;align-items:center;text-align:center;}
+.mobile-nav a{font-family:'Anton',sans-serif;font-size:clamp(2rem,9vw,3rem);text-transform:uppercase;text-decoration:none;color:var(--paper);line-height:1;}
+.mobile-nav a:hover{color:var(--yellow);}
+.mobile-nav .btn{font-family:'Space Grotesk',sans-serif;font-size:.95rem;margin-top:.8rem;text-transform:none;}
+
+/* ---------- toast (messaggi successo/errore) ---------- */
+#toast{position:fixed;left:50%;bottom:1.2rem;transform:translate(-50%,180%);z-index:130;padding:.85rem 1.5rem;border-radius:6px;font-weight:700;font-size:.85rem;transition:transform .4s ease;box-shadow:4px 4px 0 rgba(0,0,0,.5);max-width:90vw;text-align:center;}
+#toast.toast-ok{background:var(--green);color:#0b1f10;transform:translate(-50%,0);}
+#toast.toast-error{background:var(--red);color:var(--paper);transform:translate(-50%,0);}
+
+/* ---------- form contatti ---------- */
+#orderForm{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem 1.4rem;}
+@media (max-width:640px){#orderForm{grid-template-columns:1fr;}}
+.field label{display:block;font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(244,236,216,.6);margin-bottom:.45rem;font-family:'Space Mono',monospace;}
+.field input,.field textarea{width:100%;background:rgba(244,236,216,.06);border:2px solid rgba(244,236,216,.18);color:var(--paper);padding:.8rem .9rem;font-family:'Space Grotesk',sans-serif;font-size:.95rem;border-radius:4px;transition:border-color .2s;}
+.field input::placeholder,.field textarea::placeholder{color:rgba(244,236,216,.35);}
+.field input:focus,.field textarea:focus{outline:none;border-color:var(--yellow);}
+.field input.invalid{border-color:var(--red);}
+.field-error{display:block;color:#ff8a7e;font-size:.72rem;margin-top:.35rem;min-height:1em;}
+.field-full{grid-column:1/-1;}
+.form-foot{display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap;}
+.form-status{font-size:.85rem;font-weight:600;}
+.form-status.ok{color:var(--green);}
+.form-status.err{color:#ff8a7e;}
+
+/* ---------- link stile testo nei legal ---------- */
+.linklike{background:none;border:none;color:var(--yellow);cursor:pointer;font:inherit;font-size:inherit;text-decoration:underline;padding:0;}
+.linklike:hover{color:var(--paper);}
+
+/* ---------- banner cookie ---------- */
+#cookieBar{position:fixed;left:50%;bottom:1rem;transform:translate(-50%,150%);width:min(92vw,660px);z-index:110;background:var(--ink);border:2px solid rgba(244,236,216,.2);border-radius:8px;padding:1rem 1.2rem;box-shadow:6px 6px 0 rgba(229,35,31,.35);transition:transform .5s ease;display:flex;gap:1rem;align-items:center;justify-content:space-between;flex-wrap:wrap;}
+#cookieBar.show{transform:translate(-50%,0);}
+#cookieBar p{margin:0;font-size:.78rem;color:rgba(244,236,216,.75);max-width:46ch;line-height:1.5;}
+.cookie-actions{display:flex;gap:.6rem;flex-wrap:wrap;}
+.btn-sm{padding:.6rem 1rem;font-size:.75rem;}
+.btn-ghost{background:transparent;border:2px solid rgba(244,236,216,.3);color:var(--paper);padding:.6rem 1rem;border-radius:999px;cursor:pointer;font-family:'Space Grotesk',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:.04em;transition:border-color .2s,color .2s;}
+.btn-ghost:hover{border-color:var(--yellow);color:var(--yellow);}
+
+/* ---------- modal privacy/cookie ---------- */
+.modal{position:fixed;inset:0;z-index:120;display:flex;align-items:center;justify-content:center;padding:1.5rem;background:rgba(0,0,0,.72);backdrop-filter:blur(4px);opacity:0;visibility:hidden;transition:opacity .3s ease,visibility .3s ease;}
+.modal.open{opacity:1;visibility:visible;}
+.modal-box{position:relative;width:min(92vw,640px);max-height:80vh;overflow:auto;background:var(--ink);border:2px solid rgba(244,236,216,.2);border-radius:8px;padding:2.2rem;box-shadow:8px 8px 0 rgba(229,35,31,.4);}
+.modal-box h3{font-size:1.8rem;color:var(--yellow);margin-bottom:1rem;}
+.modal-box p{font-size:.85rem;line-height:1.65;color:rgba(244,236,216,.78);}
+.modal-close{position:absolute;top:.8rem;right:.9rem;background:none;border:2px solid rgba(244,236,216,.3);color:var(--paper);width:34px;height:34px;border-radius:50%;font-size:1.2rem;cursor:pointer;line-height:1;}
+.modal-close:hover{border-color:var(--red);color:var(--red);}
+
+/* ---------- film grain ---------- */
+  #grain{
+    position:fixed; inset:-50%; width:200%; height:200%;
+    z-index:60; pointer-events:none;
+    opacity:.07;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation:grainShift 0.9s steps(4) infinite;
+  }
+  @keyframes grainShift{
+    0%{transform:translate(0,0);} 25%{transform:translate(-2%,1%);}
+    50%{transform:translate(1%,-2%);} 75%{transform:translate(-1%,2%);}
+    100%{transform:translate(2%,-1%);}
+  }
+
+  /* ---------- canvas / loader ---------- */
+  #scene{
+    position:fixed; inset:0;
+    width:100%; height:100%;
+    z-index:0;
+    background:radial-gradient(120% 120% at 50% 0%, #2a0604 0%, #0b0b0b 60%);
+  }
+  /* ---------- real burger image / cinematic motion rig ---------- */
+  #realBurger{
+    position:fixed;
+    z-index:1;
+    pointer-events:none;
+    width:clamp(390px, 47vw, 760px);
+    max-width:none;
+    height:auto;
+    right:clamp(-1rem, 1.8vw, 2.5rem);
+    top:50%;
+    transform:translate3d(0,0,0);
+    transform-origin:50% 50%;
+    will-change:transform,opacity;
+    opacity:1;
+    filter:drop-shadow(12px 24px 24px rgba(0,0,0,.48));
+    isolation:isolate;
+    contain:layout paint style;
+    backface-visibility:hidden;
+    -webkit-backface-visibility:hidden;
+  }
+  #realBurger img{
+    display:block;
+    width:100%;
+    height:auto;
+    transform:none;
+    will-change:transform;
+    user-select:none;
+    -webkit-user-drag:none;
+  }
+  @media (max-width:1100px){
+    #realBurger{
+      width:clamp(360px, 52vw, 610px);
+      right:-3vw;
+    }
+  }
+  @keyframes burgerPhoneFloat{
+    0%,100%{ margin-top:0; transform:translate3d(0,0,0) rotate(-1deg) scale(1); }
+    25%{ margin-top:-10px; transform:translate3d(-5px,-4px,0) rotate(0.7deg) scale(1.012); }
+    50%{ margin-top:-18px; transform:translate3d(2px,-8px,0) rotate(1.3deg) scale(1.022); }
+    75%{ margin-top:-8px; transform:translate3d(6px,-3px,0) rotate(-0.4deg) scale(1.01); }
+  }
+  @media (max-width:760px){
+    #realBurger{
+      width:min(96vw, 520px);
+      right:-18vw;
+      top:55%;
+      opacity:1 !important;
+      filter:drop-shadow(7px 14px 17px rgba(0,0,0,.42));
+      animation:none;
+    }
+  }
+  @media (max-width:520px){
+    #realBurger{
+      width:96vw;
+      right:-22vw;
+      top:55%;
+    }
+  }
+  @media (max-width:390px){
+    #realBurger{
+      width:99vw;
+      right:-25vw;
+      top:54%;
+    }
+  }
+  @media (prefers-reduced-motion: reduce){
+    #realBurger{animation:none!important;transform:none!important;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    #realBurger{transform:none!important;}
+  }
+
+  #loader{
+    position:fixed; inset:0; z-index:100;
+    background:var(--black);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1rem;
+    transition:opacity .7s ease, visibility .7s ease;
+  }
+  #loader.hide{opacity:0; visibility:hidden; pointer-events:none;}
+  #loader .mark{
+    font-family:'Anton',sans-serif;
+    font-size:clamp(2.5rem,8vw,5rem);
+    color:var(--red);
+    letter-spacing:.04em;
+    animation:pulseMark 1.1s ease-in-out infinite;
+  }
+  #loader .load-label{font-size:.7rem; letter-spacing:.3em; color:rgba(244,236,216,.5);}
+  @keyframes pulseMark{0%,100%{opacity:.35; transform:scale(.96) rotate(-2deg);} 50%{opacity:1; transform:scale(1) rotate(1deg);}}
+
+  /* ---------- layout shell ---------- */
+  main{position:relative; z-index:2;}
+  .wrap{max-width:var(--maxw); margin:0 auto; padding:0 var(--gap);}
+
+  nav{
+    position:fixed; top:0; left:0; right:0; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:1.1rem var(--gap);
+    pointer-events:none;
+  }
+  nav > *{pointer-events:auto;}
+  .brandmark{
+    font-family:'Anton',sans-serif;
+    font-size:1.4rem;
+    letter-spacing:.06em;
+    color:var(--paper);
+    display:inline-block;
+    will-change:transform;
+    position:relative;
+  }
+  .brandmark::after{
+    content:"®"; font-size:.45em; color:var(--red); vertical-align:super; margin-left:.1em;
+  }
+  .navlinks{display:flex; gap:1.6rem; font-size:.8rem; letter-spacing:.08em;}
+  .navlinks a{text-decoration:none; opacity:.75; transition:opacity .25s, color .25s;}
+  .navlinks a:hover{opacity:1; color:var(--yellow);}
+  @media (max-width:760px){ .navlinks{display:none;} }
+
+  .btn{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:.8rem;
+    letter-spacing:.06em;
+    background:var(--red);
+    color:var(--paper);
+    border:none;
+    padding:.75rem 1.4rem;
+    border-radius:999px;
+    cursor:pointer;
+    display:inline-block;
+    will-change:transform;
+    text-decoration:none;
+    box-shadow:3px 3px 0 rgba(0,0,0,.6);
+    transition:transform .15s ease, box-shadow .15s ease, background .2s;
+  }
+  .btn:hover{background:var(--red-deep); transform:translate(-1px,-1px); box-shadow:4px 4px 0 rgba(0,0,0,.6);}
+
+  /* ---------- hero ---------- */
+  #hero{
+    min-height:100svh;
+    display:flex; flex-direction:column; justify-content:center;
+    position:relative;
+    padding-top:7rem;
+    padding-bottom:9rem;
+  }
+  #hero .tag{
+    font-family:'Space Mono',monospace;
+    font-size:.72rem;
+    letter-spacing:.28em;
+    color:var(--yellow);
+    margin-bottom:1rem;
+    display:inline-flex; align-items:center; gap:.7rem;
+  }
+  #hero .tag::before{content:""; width:34px; height:2px; background:var(--yellow); display:inline-block;}
+  #hero h1{
+    font-size:clamp(4rem, 17vw, 13rem);
+    color:var(--paper);
+    -webkit-text-stroke:3px var(--red);
+    text-shadow:6px 6px 0 rgba(229,35,31,.28);
+    position:relative;
+    z-index:2;
+  }
+  #hero .sub{
+    font-family:'Anton',sans-serif;
+    font-size:clamp(1.4rem, 5vw, 3.2rem);
+    color:var(--red);
+    margin-top:.4rem;
+    letter-spacing:.02em;
+  }
+  #hero .sub .stroke{
+    color:transparent;
+    -webkit-text-stroke:1.5px var(--paper);
+  }
+  #hero .lede{
+    max-width:36ch;
+    margin-top:1.8rem;
+    color:rgba(244,236,216,.78);
+    font-size:1rem;
+    line-height:1.55;
+  }
+  #hero .lede b{color:var(--yellow); font-weight:700;}
+
+  /* rotating stamp badge */
+  .stamp{
+    position:absolute;
+    right:clamp(0rem,6vw,5rem);
+    top:clamp(6rem,16vh,10rem);
+    width:clamp(120px,16vw,190px);
+    z-index:3;
+    filter:drop-shadow(5px 5px 0 rgba(0,0,0,.55));
+  }
+  .stamp svg{width:100%; height:auto; display:block; animation:spinStamp 16s linear infinite;}
+  .stamp text{
+    font-family:'Space Mono',monospace;
+    font-size:15.5px;
+    letter-spacing:.22em;
+    fill:var(--yellow);
+  }
+  .stamp .stamp-core{fill:var(--red);}
+  .stamp .stamp-core-txt{fill:var(--black); font-family:'Anton',sans-serif; font-size:34px; letter-spacing:.02em;}
+  @keyframes spinStamp{to{transform:rotate(360deg);}}
+  @media (max-width:760px){ .stamp{top:auto; bottom:12.5rem; right:1rem; width:110px;} }
+
+  /* ticker marquee */
+  .ticker-zone{
+    position:absolute; left:0; right:0; bottom:0;
+    display:flex; flex-direction:column; gap:.55rem;
+    padding-bottom:1.6rem;
+  }
+  .ticker{
+    overflow:hidden;
+    background:var(--yellow);
+    border-top:3px solid var(--black);
+    border-bottom:3px solid var(--black);
+    transform:rotate(-1.2deg) scale(1.02);
+  }
+  .ticker.rev{background:var(--red); transform:rotate(.8deg) scale(1.02);}
+  .ticker-track{
+    display:flex; white-space:nowrap; width:max-content;
+    animation:marquee 26s linear infinite;
+  }
+  .ticker.rev .ticker-track{animation-direction:reverse; animation-duration:32s;}
+  .ticker-track span{
+    font-family:'Anton',sans-serif;
+    font-size:1rem;
+    color:var(--black);
+    padding:.55rem 1.2rem;
+    letter-spacing:.05em;
+    display:inline-flex; align-items:center; gap:1.2rem;
+  }
+  .ticker.rev .ticker-track span{color:var(--paper);}
+  .ticker-track .sep{width:8px; height:8px; background:currentColor; transform:rotate(45deg); display:inline-block; flex:none;}
+  .ticker-track b{color:var(--red); font-family:'Space Mono',monospace; font-size:.85em;}
+  .ticker.rev .ticker-track b{color:var(--yellow);}
+  @keyframes marquee{from{transform:translateX(0);} to{transform:translateX(-50%);}}
+
+  /* ---------- sections ---------- */
+  section{position:relative; padding:7.5rem 0; z-index:2;}
+  section::before{
+    content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
+    background-image:radial-gradient(rgba(244,236,216,.05) 1px, transparent 1.4px);
+    background-size:22px 22px;
+    mask-image:linear-gradient(to bottom, transparent, black 12%, black 88%, transparent);
+    -webkit-mask-image:linear-gradient(to bottom, transparent, black 12%, black 88%, transparent);
+  }
+
+  .section-head{
+    display:flex; align-items:flex-end; justify-content:space-between;
+    gap:1.4rem; margin-bottom:2.6rem; flex-wrap:wrap;
+  }
+  .section-head .idx{
+    font-family:'Space Mono',monospace;
+    font-size:.75rem; letter-spacing:.2em; color:var(--red);
+    display:block; margin-bottom:.7rem;
+  }
+  .section-head h2{
+    font-size:clamp(2.8rem,9.5vw,5.8rem);
+    color:var(--paper);
+  }
+  .section-head h2 .stroke{color:transparent; -webkit-text-stroke:2px var(--paper);}
+  .section-head .note{
+    font-size:.8rem; color:rgba(244,236,216,.6); max-width:26ch; text-align:right;
+    padding-bottom:.5rem; border-bottom:2px dotted rgba(244,236,216,.25);
+  }
+  @media(max-width:600px){.section-head .note{text-align:left;}}
+
+  .panel{
+    background:rgba(11,11,11,.66);
+    backdrop-filter:blur(6px);
+    border:2px solid rgba(244,236,216,.14);
+    border-radius:6px;
+    padding:clamp(1.2rem,3vw,2.4rem);
+    box-shadow:8px 8px 0 rgba(229,35,31,.16);
+  }
+
+  /* menu rows with dotted leaders */
+  .row{
+    display:flex; justify-content:space-between; align-items:baseline;
+    gap:1rem; padding:1.25rem 0;
+    border-bottom:1px solid rgba(244,236,216,.12);
+  }
+  .row:last-child{border-bottom:none;}
+  .row .name{
+    font-family:'Anton',sans-serif;
+    font-size:clamp(1.25rem,2.8vw,1.75rem);
+    color:var(--paper);
+    white-space:nowrap;
+  }
+  .row .dots{
+    flex:1; border-bottom:2px dotted rgba(244,236,216,.28);
+    margin:0 .9rem; transform:translateY(-7px); min-width:2rem;
+  }
+  .price-tag{
+    font-family:'Anton',sans-serif;
+    font-size:1.05rem;
+    color:var(--black);
+    background:var(--yellow);
+    padding:.22rem .65rem;
+    transform:rotate(-2deg);
+    box-shadow:3px 3px 0 var(--red);
+    white-space:nowrap;
+    will-change:transform;
+  }
+  .price-tag sup{font-size:.62em;}
+  .price-tag.alt{background:var(--paper); box-shadow:3px 3px 0 var(--yellow);}
+
+  .item{padding:1.7rem 0; border-bottom:1px solid rgba(244,236,216,.12);}
+  .item:last-child{border-bottom:none;}
+  .item-top{display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap;}
+  .item-top .name{font-family:'Anton',sans-serif; font-size:clamp(1.35rem,3.4vw,1.95rem); color:var(--paper);}
+  .item-top .name .bnum{
+    font-family:'Space Mono',monospace;
+    font-size:.55em; color:var(--red); vertical-align:super; letter-spacing:.1em; margin-right:.45em;
+  }
+  .item-desc{margin-top:.55rem; font-size:.86rem; line-height:1.55; color:rgba(244,236,216,.68); max-width:58ch;}
+  .prices{display:flex; gap:.9rem; flex-wrap:wrap;}
+  .prices .p{text-align:center;}
+  .prices .p .lbl{display:block; font-size:.58rem; letter-spacing:.12em; color:rgba(244,236,216,.5); margin-bottom:.3rem; font-family:'Space Mono',monospace;}
+  .prices .p .val{
+    font-family:'Anton',sans-serif; font-weight:400;
+    background:var(--yellow); color:var(--black);
+    padding:.18rem .5rem; font-size:1rem;
+    box-shadow:2.5px 2.5px 0 var(--red);
+    display:inline-block;
+  }
+  .prices .p:nth-child(even) .val{transform:rotate(-2deg);}
+  .prices .p:nth-child(odd) .val{transform:rotate(1.6deg);}
+  .prices .p .val sup{font-size:.62em;}
+
+  /* boost pills */
+  .pillgrid{display:flex; flex-wrap:wrap; gap:.8rem;}
+  .pill{
+    border:2px solid var(--red);
+    color:var(--paper);
+    padding:.6rem 1.15rem;
+    font-size:.85rem;
+    display:flex; align-items:center; gap:.6rem;
+    will-change:transform;
+    cursor:default;
+    background:rgba(229,35,31,.08);
+    box-shadow:3px 3px 0 rgba(229,35,31,.35);
+    transition:background .2s, transform .15s ease, box-shadow .15s ease;
+  }
+  .pill:hover{background:rgba(229,35,31,.22); transform:translate(-1px,-1px); box-shadow:4px 4px 0 rgba(229,35,31,.5);}
+  .pill b{color:var(--yellow); font-family:'Space Mono',monospace;}
+
+  .boost-title{
+    margin-top:3.4rem;
+    font-size:clamp(1.5rem,4.4vw,2.3rem);
+    color:var(--yellow);
+    display:flex; align-items:center; gap:1rem; flex-wrap:wrap;
+  }
+  .boost-title::after{content:""; flex:1; min-width:60px; border-bottom:2px dotted rgba(244,236,216,.28);}
+
+  /* sides cards */
+  .cardgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:1.4rem;}
+  @media(max-width:800px){.cardgrid{grid-template-columns:1fr;}}
+  .card{
+    position:relative;
+    padding:1.7rem 1.6rem 1.5rem; border-radius:4px;
+    background:linear-gradient(165deg, rgba(229,35,31,.16), rgba(11,11,11,.55));
+    border:2px solid rgba(244,236,216,.12);
+    box-shadow:6px 6px 0 rgba(0,0,0,.5);
+    transition:transform .2s ease, border-color .2s;
+  }
+  .card:hover{transform:translate(-2px,-2px) rotate(-.4deg); border-color:var(--yellow);}
+  .card h3{font-size:1.55rem; color:var(--paper);}
+  .card .price{
+    font-family:'Anton',sans-serif;
+    color:var(--black); background:var(--yellow);
+    display:inline-block; padding:.15rem .55rem;
+    transform:rotate(-2.5deg);
+    box-shadow:3px 3px 0 var(--red);
+    font-size:1.15rem; margin:.5rem 0 .7rem;
+  }
+  .card .price sup{font-size:.62em;}
+  .card p{font-size:.82rem; color:rgba(244,236,216,.68); line-height:1.55; margin:0;}
+  .card .card-num{
+    position:absolute; top:.9rem; right:1rem;
+    font-family:'Space Mono',monospace; font-size:.65rem; letter-spacing:.15em;
+    color:rgba(244,236,216,.4);
+  }
+
+  #fakemeat::before{
+    background-image:radial-gradient(rgba(185,255,156,.06) 1px, transparent 1.4px);
+  }
+  #fakemeat .panel{background:rgba(9,20,12,.6); border-color:rgba(180,255,190,.2); box-shadow:8px 8px 0 rgba(120,220,140,.14);}
+  #fakemeat .section-head .idx{color:var(--green);}
+  #fakemeat .row .price, #fakemeat .prices .val{background:var(--green); box-shadow:2.5px 2.5px 0 #2c7a3f; color:#0b1f10;}
+  #fakemeat .item-top .name .bnum{color:var(--green);}
+
+  .gf{font-size:.6em; vertical-align:super; color:var(--chrome-a);}
+
+  /* ---------- footer ---------- */
+  footer{
+    padding:6rem 0 3rem; position:relative; z-index:2;
+    font-size:.8rem; color:rgba(244,236,216,.55);
+  }
+  footer .foot-brand{
+    font-family:'Anton',sans-serif;
+    font-size:clamp(4rem,15vw,11rem);
+    line-height:.85;
+    color:transparent;
+    -webkit-text-stroke:2.5px var(--red);
+    margin-bottom:.5rem;
+    user-select:none;
+  }
+  footer .foot-sub{
+    font-family:'Anton',sans-serif;
+    font-size:clamp(1.1rem,3.4vw,2rem);
+    color:var(--paper);
+    margin-bottom:2.4rem;
+  }
+  footer .bigcta{display:inline-block; margin-bottom:3rem;}
+  .social-row{display:flex; flex-wrap:wrap; gap:1rem; margin-bottom:2.4rem;}
+  .social-link{
+    display:inline-flex; align-items:center; gap:.55rem;
+    padding:.65rem 1.1rem; border-radius:999px;
+    border:2px solid rgba(244,236,216,.22);
+    color:var(--paper); text-decoration:none;
+    font-size:.85rem; letter-spacing:.02em;
+    transition:border-color .25s, color .25s, transform .15s;
+    will-change:transform;
+  }
+  .social-link:hover{border-color:var(--yellow); color:var(--yellow); transform:translateY(-2px);}
+  .barcode{
+    margin:0 0 1.8rem; display:block;
+  }
+  footer .legal{max-width:62ch; line-height:1.65; margin-bottom:1.4rem; border-top:2px dotted rgba(244,236,216,.2); padding-top:1.4rem;}
+
+  /* custom cursor dot */
+  #cursor{
+    position:fixed; top:0; left:0; width:10px; height:10px; border-radius:50%;
+    background:var(--yellow); pointer-events:none; z-index:200;
+    transform:translate(-50%,-50%);
+    mix-blend-mode:difference;
+    display:none;
+  }
+  @media (hover:hover) and (pointer:fine){ #cursor{display:block;} }
+
+  .reveal{opacity:0; transform:translateY(28px);}
+
+  @media (prefers-reduced-motion: reduce){
+    #grain{animation:none;}
+    .stamp svg{animation:none;}
+    .ticker-track{animation-duration:80s;}
+  }
+
+  /* Online/mobile performance hardening */
+  #realBurger{
+    content-visibility:auto;
+  }
+  @media (max-width:760px){
+    #scene{display:none;}
+    #realBurger{
+      width:clamp(330px, 94vw, 520px);
+      right:clamp(-120px, -14vw, -55px);
+      top:calc(53% + env(safe-area-inset-top));
+      transform:translate3d(0,-50%,0);
+      filter:drop-shadow(0 18px 20px rgba(0,0,0,.38));
+    }
+    main{overflow:hidden;}
+  }
+  @media (max-width:420px){
+    #realBurger{width:clamp(320px, 104vw, 430px);right:-23vw;top:54%;}
+  }
+</style>
+</head>
+<body>
+
+<div id="loader">
+  <div class="mark">BLSD</div>
+  <div class="load-label mono">CARICAMENTO DELLA DOSE…</div>
+</div>
+<canvas id="scene"></canvas>
+<div id="realBurger" aria-hidden="true"><img src="assets/burger.webp" alt="" width="1287" height="1222" decoding="async" fetchpriority="high" draggable="false" alt=""></div>
+<div id="grain"></div>
+<div id="cursor"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<nav>
+  <a href="#hero" class="brandmark" id="brandmark" aria-label="BLSD — torna all'inizio">BLSD</a>
+  <div class="navlinks">
+    <a href="#fries">Fries</a>
+    <a href="#sides">Sides</a>
+    <a href="#burgers">Burgers</a>
+    <a href="#fakemeat">Fake Meat</a>
+    <a href="#ordina">Contatti</a>
+  </div>
+  <a href="https://linktr.ee/blsd_burger?utm_source=linktree_profile_share&ltsid=78308010-b0bf-4a8c-b87b-3eda7ec395fb" class="btn" id="ctaNav" target="_blank" rel="noopener">Fatti una dose</a>
+  <button class="burger-btn" id="burgerBtn" type="button" aria-label="Apri il menu" aria-expanded="false" aria-controls="mobileMenu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+<div id="mobileMenu" aria-hidden="true">
+  <nav class="mobile-nav" aria-label="Menu di navigazione mobile">
+    <a href="#fries">Fries</a>
+    <a href="#sides">Sides</a>
+    <a href="#burgers">Burgers</a>
+    <a href="#fakemeat">Fake Meat</a>
+    <a href="#ordina">Contatti</a>
+    <a href="https://linktr.ee/blsd_burger?utm_source=linktree_profile_share&ltsid=78308010-b0bf-4a8c-b87b-3eda7ec395fb" class="btn" target="_blank" rel="noopener">Fatti una dose</a>
+  </nav>
+</div>
+
+<main>
+
+  <section id="hero">
+    <div class="wrap">
+      <div class="tag">STREET BURGER · FRESH EVERY DAY</div>
+      <h1>BLSD</h1>
+      <div class="sub">Your <span class="stroke">Burger</span> Dealer</div>
+      <p class="lede">Smash burger, panature illegali di gusto e salse che non si dovrebbero poter vendere senza ricetta. Sfoglia il menu, scegli la <b>tua dose</b>.</p>
+    </div>
+
+    <div class="stamp" aria-hidden="true">
+      <svg viewBox="0 0 200 200">
+        <defs>
+          <path id="circPath" d="M100,100 m-74,0 a74,74 0 1,1 148,0 a74,74 0 1,1 -148,0"/>
+        </defs>
+        <circle cx="100" cy="100" r="52" class="stamp-core"/>
+        <text><textPath href="#circPath">SMASH BURGER · NO PRESCRIPTION · FRESH EVERY DAY · </textPath></text>
+        <text x="100" y="112" text-anchor="middle" class="stamp-core-txt">100%</text>
+      </svg>
+    </div>
+
+    <div class="ticker-zone" aria-hidden="true">
+      <div class="ticker"><div class="ticker-track" id="tickerA"></div></div>
+      <div class="ticker rev"><div class="ticker-track" id="tickerB"></div></div>
+    </div>
+  </section>
+
+  <section id="fries">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <span class="idx reveal mono">01 / PATATE</span>
+          <h2 class="reveal">Fri<span class="stroke">es</span></h2>
+        </div>
+        <div class="note reveal">Croccanti fuori, morbide dentro. Nessun compromesso.</div>
+      </div>
+      <div class="panel reveal">
+        <div class="row"><span class="name">Fries</span><span class="dots"></span><span class="price-tag">3<sup>79</sup></span></div>
+        <div class="row"><span class="name">Sweet Fries</span><span class="dots"></span><span class="price-tag alt">4<sup>99</sup></span></div>
+        <div class="row"><span class="name">50% / 50%</span><span class="dots"></span><span class="price-tag">4<sup>99</sup></span></div>
+      </div>
+
+      <h3 class="boost-title reveal">Boost your fries with</h3>
+      <div class="pillgrid reveal" style="margin-top:1.3rem;" id="pillgrid">
+        <div class="pill magnetic">Smashed patty 'n' cheese <b>+2.29</b></div>
+        <div class="pill magnetic">Bacon 'n' cheese <b>+2.29</b></div>
+        <div class="pill magnetic">Pulled pork <b>+2.29</b></div>
+        <div class="pill magnetic">American cheese <b>+0.99</b></div>
+        <div class="pill magnetic">Smashed onion <b>+0.49</b></div>
+        <div class="pill magnetic">Pickles <b>+0.49</b></div>
+        <div class="pill magnetic">Jalapeño <b>+0.49</b></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="sides">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <span class="idx reveal mono">02 / CONTORNI</span>
+          <h2 class="reveal">Si<span class="stroke">des</span></h2>
+        </div>
+        <div class="note reveal">*disponibile anche senza glutine</div>
+      </div>
+      <div class="cardgrid">
+        <div class="card reveal">
+          <span class="card-num mono">S.01</span>
+          <h3>Chicken Nuggets</h3>
+          <div class="price">4<sup>49</sup></div>
+          <p>Bocconcini di pollo con panatura speciale, serviti con BLSD sauce.</p>
+        </div>
+        <div class="card reveal">
+          <span class="card-num mono">S.02</span>
+          <h3>Crunchy Strips <span class="gf">GF</span></h3>
+          <div class="price">5<sup>99</sup></div>
+          <p>Filetti di pollo in panatura croccante, serviti con BLSD sauce.</p>
+        </div>
+        <div class="card reveal">
+          <span class="card-num mono">S.03</span>
+          <h3>Piggy Bombs <span class="gf">GF</span></h3>
+          <div class="price">4<sup>99</sup></div>
+          <p>Bombette di pulled pork servite con BLSD cheese sauce.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="burgers">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <span class="idx reveal mono">03 / LE DOSE</span>
+          <h2 class="reveal">BLSD Bur<span class="stroke">gers</span></h2>
+        </div>
+        <div class="note reveal">È possibile scegliere il bun senza glutine su tutta la linea.</div>
+      </div>
+
+      <div class="panel">
+        <div class="item reveal">
+          <div class="item-top">
+            <span class="name"><span class="bnum">B.01</span>Cheesus B</span>
+            <div class="prices">
+              <div class="p"><span class="lbl">SINGLE</span><span class="val">6<sup>60</sup></span></div>
+              <div class="p"><span class="lbl">DOUBLE</span><span class="val">8<sup>80</sup></span></div>
+              <div class="p"><span class="lbl">TRIPLE</span><span class="val">10<sup>99</sup></span></div>
+              <div class="p"><span class="lbl">MONSTER</span><span class="val">12<sup>99</sup></span></div>
+            </div>
+          </div>
+          <p class="item-desc">Potato bun artigianale, patty di Marco° smashed, doppio American cheese, pickles, BLSD sauce.</p>
+        </div>
+
+        <div class="item reveal">
+          <div class="item-top">
+            <span class="name"><span class="bnum">B.02</span>Tasty As Fuck</span>
+            <div class="prices">
+              <div class="p"><span class="lbl">SINGLE</span><span class="val">7<sup>49</sup></span></div>
+              <div class="p"><span class="lbl">DOUBLE</span><span class="val">9<sup>99</sup></span></div>
+              <div class="p"><span class="lbl">TRIPLE</span><span class="val">11<sup>99</sup></span></div>
+              <div class="p"><span class="lbl">MONSTER</span><span class="val">13<sup>99</sup></span></div>
+            </div>
+          </div>
+          <p class="item-desc">Potato bun artigianale, patty di Marco° smashed, Monterey cheese, pomodoro, insalata, cipolla, BLSD tasty sauce.</p>
+        </div>
+
+        <div class="item reveal">
+          <div class="item-top">
+            <span class="name"><span class="bnum">B.03</span>Smash King</span>
+            <div class="prices">
+              <div class="p"><span class="lbl">DOUBLE</span><span class="val">8<sup>99</sup></span></div>
+              <div class="p"><span class="lbl">TRIPLE</span><span class="val">10<sup>39</sup></span></div>
+              <div class="p"><span class="lbl">MONSTER</span><span class="val">12<sup>99</sup></span></div>
+            </div>
+          </div>
+          <p class="item-desc">Potato bun artigianale, doppio patty di Marco° smashed w/onion, doppio American cheese, pickles, BLSD sauce.</p>
+        </div>
+
+        <div class="item reveal">
+          <div class="item-top">
+            <span class="name"><span class="bnum">B.04</span>Pig Daddy</span>
+            <div class="prices">
+              <div class="p"><span class="lbl">SINGLE</span><span class="val">9<sup>90</sup></span></div>
+              <div class="p"><span class="lbl">DOUBLE</span><span class="val">12<sup>40</sup></span></div>
+              <div class="p"><span class="lbl">TRIPLE</span><span class="val">14<sup>90</sup></span></div>
+            </div>
+          </div>
+          <p class="item-desc">Potato patty smashed selezione de Marco°, Monterey cheese, bacon jam, pickles, bacon sauce.</p>
+        </div>
+
+        <div class="item reveal">
+          <div class="item-top">
+            <span class="name"><span class="bnum">B.05</span>Pork Fiction</span>
+            <div class="prices"><div class="p"><span class="lbl">SINGLE</span><span class="val">8<sup>49</sup></span></div></div>
+          </div>
+          <p class="item-desc">Potato bun artigianale, pulled pork selezione de Marco°, coleslaw BLSD, pickles, bourbon BBQ sauce.</p>
+        </div>
+
+        <div class="item reveal">
+          <div class="item-top">
+            <span class="name"><span class="bnum">B.06</span>Chick Tock</span>
+            <div class="prices">
+              <div class="p"><span class="lbl">SINGLE</span><span class="val">7<sup>99</sup></span></div>
+              <div class="p"><span class="lbl">DOUBLE</span><span class="val">9<sup>99</sup></span></div>
+            </div>
+          </div>
+          <p class="item-desc">Chicken de Marco° fried, doppio American cheese, pomodoro, insalata, pickles, secret mayo BLSD.</p>
+        </div>
+
+        <div class="item reveal">
+          <div class="item-top">
+            <span class="name"><span class="bnum">B.07</span>Avomaria</span>
+            <div class="prices">
+              <div class="p"><span class="lbl">SINGLE</span><span class="val">8<sup>89</sup></span></div>
+              <div class="p"><span class="lbl">DOUBLE</span><span class="val">11<sup>19</sup></span></div>
+            </div>
+          </div>
+          <p class="item-desc">Potato bun artigianale, chicken, Monterey cheese, avocado, pomodoro, mayo pepper &amp; lime.</p>
+        </div>
+
+        <div class="item reveal">
+          <div class="item-top">
+            <span class="name"><span class="bnum">B.08</span>Bad Bun-Ny 🌶️</span>
+            <div class="prices">
+              <div class="p"><span class="lbl">DOUBLE</span><span class="val">10<sup>49</sup></span></div>
+              <div class="p"><span class="lbl">TRIPLE</span><span class="val">12<sup>99</sup></span></div>
+              <div class="p"><span class="lbl">MONSTER</span><span class="val">15<sup>49</sup></span></div>
+            </div>
+          </div>
+          <p class="item-desc">Potato bun artigianale, doppio patty di Marco° smashed w/onion e jalapeño, American cheese, bacon jam, BLSD sauce.</p>
+        </div>
+
+        <div class="item reveal" style="border-bottom:none;">
+          <div class="item-top">
+            <span class="name"><span class="bnum">B.09</span>[Not] Guilty Pleasure</span>
+            <div class="prices">
+              <div class="p"><span class="lbl">SINGLE</span><span class="val">6<sup>49</sup></span></div>
+              <div class="p"><span class="lbl">DOUBLE</span><span class="val">8<sup>49</sup></span></div>
+            </div>
+          </div>
+          <p class="item-desc">Salad wrap, doppio patty di Marco° smashed, doppio American cheese, pomodoro, pickles, BLSD sauce.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="fakemeat">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <span class="idx reveal mono">04 / VERDE</span>
+          <h2 class="reveal" style="color:var(--green);">Fake <span class="stroke">Meat</span></h2>
+        </div>
+        <div class="note reveal">Boost your burger with fake meat.</div>
+      </div>
+      <div class="panel">
+        <div class="item reveal">
+          <div class="item-top">
+            <span class="name"><span class="bnum">F.01</span>Plant Nuggets</span>
+            <div class="prices"><div class="p"><span class="val">6<sup>99</sup></span></div></div>
+          </div>
+          <p class="item-desc">Nuggets 100% veg, serviti con veg creamy sauce.</p>
+        </div>
+        <div class="item reveal" style="border-bottom:none;">
+          <div class="item-top">
+            <span class="name"><span class="bnum">F.02</span>Fake Cheese Burger</span>
+            <div class="prices">
+              <div class="p"><span class="lbl">SINGLE</span><span class="val">9<sup>99</sup></span></div>
+              <div class="p"><span class="lbl">DOUBLE</span><span class="val">12<sup>99</sup></span></div>
+            </div>
+          </div>
+          <p class="item-desc">Potato bun artigianale, veg patty, veg American cheese, pomodoro, insalata, pickles, veg creamy sauce.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="ordina">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <span class="idx reveal mono">05 / CONTATTI</span>
+          <h2 class="reveal">Ordina la <span class="stroke">dose</span></h2>
+        </div>
+        <div class="note reveal">Prenotazioni, eventi e catering. Ti richiamiamo noi.</div>
+      </div>
+      <div class="panel reveal">
+        <form id="orderForm" novalidate>
+          <div class="field">
+            <label for="fName">Nome *</label>
+            <input id="fName" name="name" type="text" autocomplete="name" placeholder="Il tuo nome">
+            <small class="field-error" data-for="fName"></small>
+          </div>
+          <div class="field">
+            <label for="fPhone">Telefono *</label>
+            <input id="fPhone" name="phone" type="tel" autocomplete="tel" placeholder="+39 333 000 0000">
+            <small class="field-error" data-for="fPhone"></small>
+          </div>
+          <div class="field field-full">
+            <label for="fMsg">Messaggio</label>
+            <textarea id="fMsg" name="message" rows="4" placeholder="Cosa ti serve? Numero di burger, data, ora, evento…"></textarea>
+          </div>
+          <div class="field-full form-foot">
+            <button type="submit" class="btn magnetic" id="orderSubmit">Invia richiesta</button>
+            <span class="form-status" id="formStatus" role="status" aria-live="polite"></span>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-brand" aria-hidden="true">BLSD</div>
+    <div class="foot-sub">Your Burger Dealer</div>
+
+    <a href="https://linktr.ee/blsd_burger?utm_source=linktree_profile_share&ltsid=78308010-b0bf-4a8c-b87b-3eda7ec395fb" class="btn bigcta magnetic" target="_blank" rel="noopener" style="font-size:1.05rem; padding:1.05rem 2.2rem;">Fatti una dose →</a>
+
+    <div class="social-row">
+      <a href="https://www.instagram.com/blsd_burger_joint?stkn=MXNiMjhnZDN6YjJqMA==" target="_blank" rel="noopener" class="social-link magnetic">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" stroke="none"/></svg>
+        Instagram
+      </a>
+      <a href="https://maps.app.goo.gl/vyjYssnHqoVDcHjGA?g_st=ic" target="_blank" rel="noopener" class="social-link magnetic">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s7-7.4 7-12.6A7 7 0 0 0 5 9.4C5 14.6 12 22 12 22Z"/><circle cx="12" cy="9.4" r="2.4"/></svg>
+        Dove siamo
+      </a>
+      <a href="https://linktr.ee/blsd_burger?utm_source=linktree_profile_share&ltsid=78308010-b0bf-4a8c-b87b-3eda7ec395fb" target="_blank" rel="noopener" class="social-link magnetic">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v18M6 8l6-5 6 5M7 14l5 4 5-4"/></svg>
+        Tutti i link
+      </a>
+      <a href="tel:+390212345678" class="social-link magnetic">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4h4l2 5-3 2a13 13 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A17 17 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg>
+        Chiama
+      </a>
+      <a href="mailto:info@blsd.it" class="social-link magnetic">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+        Email
+      </a>
+    </div>
+
+    <svg class="barcode" width="220" height="44" viewBox="0 0 220 44" aria-hidden="true">
+      <g fill="rgba(244,236,216,.6)">
+        <rect x="0" width="3" height="34"/><rect x="6" width="1.5" height="34"/><rect x="11" width="4" height="34"/>
+        <rect x="18" width="1.5" height="34"/><rect x="23" width="2.5" height="34"/><rect x="29" width="5" height="34"/>
+        <rect x="37" width="1.5" height="34"/><rect x="42" width="3" height="34"/><rect x="48" width="1.5" height="34"/>
+        <rect x="53" width="4" height="34"/><rect x="60" width="2" height="34"/><rect x="66" width="1.5" height="34"/>
+        <rect x="71" width="5" height="34"/><rect x="79" width="1.5" height="34"/><rect x="84" width="3" height="34"/>
+        <rect x="90" width="2" height="34"/><rect x="96" width="1.5" height="34"/><rect x="101" width="4" height="34"/>
+        <rect x="108" width="2.5" height="34"/><rect x="114" width="1.5" height="34"/><rect x="119" width="3" height="34"/>
+        <rect x="126" width="5" height="34"/><rect x="134" width="1.5" height="34"/><rect x="139" width="2" height="34"/>
+        <rect x="145" width="4" height="34"/><rect x="152" width="1.5" height="34"/><rect x="157" width="3" height="34"/>
+        <rect x="163" width="1.5" height="34"/><rect x="168" width="5" height="34"/><rect x="176" width="2" height="34"/>
+        <rect x="182" width="1.5" height="34"/><rect x="187" width="3" height="34"/><rect x="194" width="4" height="34"/>
+        <rect x="201" width="1.5" height="34"/><rect x="206" width="2.5" height="34"/><rect x="212" width="4" height="34"/>
+      </g>
+      <text x="0" y="42" fill="rgba(244,236,216,.45)" font-family="Space Mono, monospace" font-size="8" letter-spacing="4">BLSD·YOUR·BURGER·DEALER</text>
+    </svg>
+
+    <p class="legal">
+      I prezzi sono espressi in euro. I numeri tra parentesi accanto agli ingredienti fanno riferimento alla tabella allergeni: chiedi allo staff o consulta l'informativa allergeni esposta in negozio prima di ordinare. ° I tagli e le selezioni di carne sono a cura del fornitore indicato in negozio. Menu e prezzi soggetti a variazione senza preavviso.
+    </p>
+    <p style="margin-bottom:.7rem;">© <span id="yr">2026</span> BLSD — Your Burger Dealer ·
+      <button type="button" class="linklike" data-policy="privacy">Privacy Policy</button> ·
+      <button type="button" class="linklike" data-policy="cookie">Cookie Policy</button>
+    </p>
+    <p>Pagina dimostrativa costruita sui contenuti del menu forniti. Telefono ed email sono segnaposto: sostituiscili con i contatti reali.</p>
+  </div>
+</footer>
+
+<!-- Cookie banner -->
+<div id="cookieBar" role="dialog" aria-label="Informativa cookie">
+  <p>Questo sito usa solo cookie tecnici necessari al funzionamento. Nessun tracciamento pubblicitario.
+    <button type="button" class="linklike" id="cookieMore">Dettagli</button>
+  </p>
+  <div class="cookie-actions">
+    <button type="button" class="btn btn-sm" id="cookieAccept">Accetta</button>
+    <button type="button" class="btn-ghost" id="cookieDecline">Rifiuta</button>
+  </div>
+</div>
+
+<!-- Modal Privacy / Cookie -->
+<div class="modal" id="legalModal" aria-hidden="true">
+  <div class="modal-box" role="document">
+    <button type="button" class="modal-close" id="modalClose" aria-label="Chiudi">&times;</button>
+    <h3 id="modalTitle">Privacy Policy</h3>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+/* ============ UI FIXES: menu mobile, anchor, toast, form, cookie, modal, anno ============ */
+(function(){
+  'use strict';
+
+  /* --- anno copyright dinamico --- */
+  var yr = document.getElementById('yr');
+  if (yr) yr.textContent = new Date().getFullYear();
+
+  /* --- toast (success / error) --- */
+  var toastEl = document.getElementById('toast');
+  var toastTimer = null;
+  function toast(msg, type){
+    if (!toastEl) return;
+    toastEl.textContent = msg;
+    toastEl.className = 'show ' + (type === 'error' ? 'toast-error' : 'toast-ok');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toastEl.className = ''; }, 4200);
+  }
+
+  /* --- menu mobile --- */
+  var burger = document.getElementById('burgerBtn');
+  var mMenu = document.getElementById('mobileMenu');
+  function closeMobileMenu(){
+    if (!mMenu) return;
+    mMenu.classList.remove('open');
+    mMenu.setAttribute('aria-hidden', 'true');
+    if (burger){ burger.setAttribute('aria-expanded', 'false'); burger.classList.remove('active'); }
+    document.body.style.overflow = '';
+  }
+  if (burger && mMenu){
+    burger.addEventListener('click', function(){
+      var open = mMenu.classList.toggle('open');
+      mMenu.setAttribute('aria-hidden', open ? 'false' : 'true');
+      burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+      burger.classList.toggle('active', open);
+      document.body.style.overflow = open ? 'hidden' : '';
+    });
+  }
+
+  /* --- anchor smooth scroll (compatibile Lenis) --- */
+  document.querySelectorAll('a[href^="#"]').forEach(function(a){
+    a.addEventListener('click', function(e){
+      var href = a.getAttribute('href');
+      if (href && href.length > 1){
+        var t = document.querySelector(href);
+        if (t){
+          e.preventDefault();
+          closeMobileMenu();
+          if (window.__lenis && typeof window.__lenis.scrollTo === 'function'){
+            window.__lenis.scrollTo(t, { offset: -24 });
+          } else {
+            t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }
+      }
+    });
+  });
+
+  /* --- form: validazione con messaggi di errore e successo --- */
+  var form = document.getElementById('orderForm');
+  if (form){
+    var status = document.getElementById('formStatus');
+    var phoneRe = /^\+?[0-9][0-9\s().-]{6,}$/;
+    function setErr(id, msg){
+      var input = document.getElementById(id);
+      var err = form.querySelector('.field-error[data-for="' + id + '"]');
+      if (err) err.textContent = msg || '';
+      if (input) input.classList.toggle('invalid', !!msg);
+      return !msg;
+    }
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      var ok = true;
+      ok = setErr('fName', document.getElementById('fName').value.trim().length >= 2 ? '' : 'Inserisci il tuo nome (min. 2 caratteri).') && ok;
+      ok = setErr('fPhone', phoneRe.test(document.getElementById('fPhone').value.trim()) ? '' : 'Numero di telefono non valido.') && ok;
+      if (!ok){
+        status.textContent = 'Controlla i campi evidenziati e riprova.';
+        status.className = 'form-status err';
+        toast('Errore: controlla i campi del modulo.', 'error');
+        return;
+      }
+      status.textContent = 'Richiesta inviata! Ti richiamiamo entro pochi minuti.';
+      status.className = 'form-status ok';
+      toast('Richiesta inviata con successo.', 'ok');
+      form.reset();
+    });
+    ['fName', 'fPhone'].forEach(function(id){
+      var el = document.getElementById(id);
+      if (el) el.addEventListener('input', function(){ setErr(id, ''); });
+    });
+  }
+
+  /* --- banner cookie --- */
+  var bar = document.getElementById('cookieBar');
+  var KEY = 'blsd_consent';
+  function consent(v){
+    try { localStorage.setItem(KEY, v); } catch(e){}
+    if (bar) bar.classList.remove('show');
+  }
+  if (bar){
+    var saved = null;
+    try { saved = localStorage.getItem(KEY); } catch(e){}
+    if (!saved) setTimeout(function(){ bar.classList.add('show'); }, 1200);
+    var acc = document.getElementById('cookieAccept');
+    var dec = document.getElementById('cookieDecline');
+    var more = document.getElementById('cookieMore');
+    if (acc) acc.addEventListener('click', function(){ consent('accepted'); });
+    if (dec) dec.addEventListener('click', function(){ consent('declined'); });
+    if (more) more.addEventListener('click', function(){ openModal('cookie'); });
+  }
+
+  /* --- modal privacy / cookie --- */
+  var modal = document.getElementById('legalModal');
+  var mTitle = document.getElementById('modalTitle');
+  var mBody = document.getElementById('modalBody');
+  var POLICIES = {
+    privacy: {
+      title: 'Privacy Policy',
+      body: '<p>Titolare del trattamento: BLSD — Your Burger Dealer. I dati inviati tramite il modulo contatti (nome, telefono, messaggio) sono utilizzati esclusivamente per rispondere alla tua richiesta e non vengono ceduti a terzi né utilizzati per finalità di marketing senza consenso.</p><p>Hai diritto di accesso, rettifica, cancellazione e portabilità dei tuoi dati scrivendo all\'indirizzo email indicato nel footer della pagina. La presente informativa è dimostrativa e va integrata con i dati legali reali del titolare.</p>'
+    },
+    cookie: {
+      title: 'Cookie Policy',
+      body: '<p>Questo sito non utilizza cookie di profilazione né strumenti di tracciamento di terze parti. L\'eventuale salvataggio della preferenza cookie (accetta/rifiuta) avviene tramite la memoria locale del browser (localStorage) e non tramite cookie.</p><p>La pagina utilizza una fotografia/immagine del burger incorporata nel documento, oltre a font e librerie tecniche (Google Fonts, GSAP, Three.js) necessarie alla visualizzazione della pagina.</p>'
+    }
+  };
+  function openModal(key){
+    if (!modal) return;
+    var p = POLICIES[key] || POLICIES.privacy;
+    mTitle.textContent = p.title;
+    mBody.innerHTML = p.body;
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+  }
+  function closeModal(){
+    if (!modal) return;
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+  }
+  document.querySelectorAll('[data-policy]').forEach(function(b){
+    b.addEventListener('click', function(){ openModal(b.getAttribute('data-policy')); });
+  });
+  var mClose = document.getElementById('modalClose');
+  if (mClose) mClose.addEventListener('click', closeModal);
+  if (modal) modal.addEventListener('click', function(e){ if (e.target === modal) closeModal(); });
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape'){ closeModal(); closeMobileMenu(); }
+  });
+})();
+</script>
+
+<!-- Libraries: GSAP / ScrollTrigger / Lenis (classic scripts, execute before our module) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js"></script>
+
+<script>
+/* loader fallback: runs even if the WebGL module or CDNs fail to load */
+window.addEventListener('load', function(){ var l=document.getElementById('loader'); if(l) l.classList.add('hide'); });
+setTimeout(function(){ var l=document.getElementById('loader'); if(l) l.classList.add('hide'); }, 3500);
+
+/* Mobile-safe fallback: the page remains fully usable even when a phone/browser
+   blocks ES modules, import maps, WebGL, or remote animation libraries. */
+(function(){
+  var burger = document.getElementById('realBurger');
+  if(!burger || !window.matchMedia('(max-width:760px)').matches) return;
+  var ticking = false;
+  function update(){
+    ticking = false;
+    var max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+    var p = Math.max(0, Math.min(1, window.scrollY / max));
+    burger.style.setProperty('--phone-scroll', p.toFixed(4));
+    burger.style.marginTop = (-Math.sin(p * Math.PI) * 18).toFixed(1) + 'px';
+    burger.style.marginLeft = (Math.sin(p * Math.PI * 1.7) * 9).toFixed(1) + 'px';
+    burger.style.setProperty('rotate', (Math.sin(p * Math.PI * 2) * 3).toFixed(2) + 'deg');
+    burger.style.setProperty('scale', (1 - p * .13).toFixed(3));
+  }
+  function onScroll(){ if(!ticking){ requestAnimationFrame(update); ticking=true; } }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  window.addEventListener('resize', update, {passive:true});
+  update();
+})();
+</script>
+
+<script type="module">
+
+/* ============================================================
+   0. ENV DETECTION / FALLBACK FLAGS
+   ============================================================ */
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const isCoarse = !window.matchMedia('(hover:hover) and (pointer:fine)').matches;
+const isSmall = window.matchMedia('(max-width:760px)').matches;
+const lowPower = isCoarse || isSmall || reducedMotion;
+
+let webglOK = true;
+try{
+  const testCanvas = document.createElement('canvas');
+  webglOK = !!(window.WebGLRenderingContext && (testCanvas.getContext('webgl') || testCanvas.getContext('experimental-webgl')));
+}catch(e){ webglOK = false; }
+
+/* ============================================================
+   1. TICKERS (built from real menu data — single source of truth)
+   ============================================================ */
+const tickerItems = [
+  ['FRIES','3,79'],['SWEET FRIES','4,99'],['50/50','4,99'],
+  ['CHEESUS B','6,60'],['TASTY AS FUCK','7,49'],['SMASH KING','8,99'],
+  ['PIG DADDY','9,90'],['PORK FICTION','8,49'],['CHICK TOCK','7,99'],
+  ['AVOMARIA','8,89'],['BAD BUN-NY','10,49'],['PLANT NUGGETS','6,99']
+];
+function buildTicker(el, items){
+  const chunk = items.map(([n,p]) => `<span>${n} <b>${p}€</b><i class="sep"></i></span>`).join('');
+  el.innerHTML = chunk + chunk; // duplicated for seamless loop
+}
+buildTicker(document.getElementById('tickerA'), tickerItems);
+buildTicker(document.getElementById('tickerB'), [...tickerItems].reverse());
+
+/* ============================================================
+   2. GSAP / SCROLLTRIGGER / LENIS SETUP
+   ============================================================ */
+const hasGSAP = typeof window.gsap !== 'undefined';
+const hasST = typeof window.ScrollTrigger !== 'undefined';
+if(hasGSAP && hasST){ gsap.registerPlugin(ScrollTrigger); }
+
+let lenis = null;
+if(!reducedMotion && !isCoarse && typeof window.Lenis !== 'undefined'){
+  try{
+    lenis = window.__lenis = new Lenis({ duration: 1.15, smoothWheel: true, touchMultiplier: 1.1 });
+    lenis.on('scroll', ()=>{ if(hasST) ScrollTrigger.update(); });
+    if(hasGSAP){
+      gsap.ticker.add((time)=>{ lenis.raf(time*1000); });
+      gsap.ticker.lagSmoothing(0);
+    }
+  }catch(e){ console.warn('[BLSD] Lenis unavailable, native scroll fallback', e); lenis = null; }
+}
+
+/* Reveal animations */
+if(hasGSAP && hasST){
+  document.querySelectorAll('.reveal').forEach((el)=>{
+    gsap.to(el, {
+      opacity:1, y:0, duration: reducedMotion? 0 : 0.9, ease:'power3.out',
+      scrollTrigger:{ trigger: el, start:'top 88%', once:true }
+    });
+  });
+}else{
+  document.querySelectorAll('.reveal').forEach(el=>{ el.style.opacity=1; el.style.transform='none'; });
+}
+
+/* Magnetic elements */
+function attachMagnetic(el, strength=22){
+  if(isCoarse || reducedMotion || !hasGSAP) return;
+  const moveX = gsap.quickTo(el, 'x', {duration:0.5, ease:'power3.out'});
+  const moveY = gsap.quickTo(el, 'y', {duration:0.5, ease:'power3.out'});
+  el.addEventListener('mousemove', (e)=>{
+    const r = el.getBoundingClientRect();
+    const relX = e.clientX - (r.left + r.width/2);
+    const relY = e.clientY - (r.top + r.height/2);
+    moveX(relX/r.width*strength);
+    moveY(relY/r.height*strength);
+  });
+  el.addEventListener('mouseleave', ()=>{ moveX(0); moveY(0); });
+}
+document.querySelectorAll('.magnetic, .btn, #brandmark, .price-tag, .item .val').forEach(el=>attachMagnetic(el, 12));
+
+/* Custom cursor */
+const cursorEl = document.getElementById('cursor');
+if(!isCoarse && hasGSAP){
+  const cx = gsap.quickTo(cursorEl,'x',{duration:0.15, ease:'power2.out'});
+  const cy = gsap.quickTo(cursorEl,'y',{duration:0.15, ease:'power2.out'});
+  window.addEventListener('pointermove', e=>{ cx(e.clientX); cy(e.clientY); });
+}
+
+/* ============================================================
+   3. THREE.JS SCENE (self-contained: procedural env, no external HDRI)
+   ============================================================ */
+let THREE = null;
+let RoomEnvironment = null;
+if(webglOK && !isCoarse && !isSmall && !reducedMotion){
+  try{
+    THREE = await import('three');
+    ({ RoomEnvironment } = await import('three/addons/environments/RoomEnvironment.js'));
+  }catch(err){
+    console.warn('[BLSD] Three.js skipped:', err);
+  }
+}
+
+if(webglOK && THREE){
+  const canvas = document.getElementById('scene');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true, powerPreference:'high-performance' });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, lowPower?1.4:2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.15;
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(42, window.innerWidth/window.innerHeight, 0.1, 100);
+  camera.position.set(0, 0.4, 9);
+
+  // Procedural studio environment (reflections without network assets)
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), 0.04).texture;
+
+  // ---- Lighting rig ----
+  const keyLight = new THREE.DirectionalLight(0xffe3c2, 2.2);
+  keyLight.position.set(3, 4, 5);
+  const fillLight = new THREE.PointLight(0xff4d3d, 6, 20, 2);
+  fillLight.position.set(-4, -1, 3);
+  const rimLight = new THREE.PointLight(0xffcf13, 4, 20, 2);
+  rimLight.position.set(0, 3, -4);
+  const ambient = new THREE.AmbientLight(0x442018, 1.1);
+  scene.add(keyLight, fillLight, rimLight, ambient);
+
+  // ---- GLSL particle "ember" field ----
+  const PCOUNT = lowPower ? 350 : 1600;
+  const positions = new Float32Array(PCOUNT*3);
+  const randoms = new Float32Array(PCOUNT);
+  for(let i=0;i<PCOUNT;i++){
+    positions[i*3+0] = (Math.random()-0.5)*20;
+    positions[i*3+1] = (Math.random()-0.5)*14;
+    positions[i*3+2] = (Math.random()-0.5)*14 - 2;
+    randoms[i] = Math.random();
+  }
+  const pGeo = new THREE.BufferGeometry();
+  pGeo.setAttribute('position', new THREE.BufferAttribute(positions,3));
+  pGeo.setAttribute('aRandom', new THREE.BufferAttribute(randoms,1));
+
+  const pMat = new THREE.ShaderMaterial({
+    transparent:true,
+    depthWrite:false,
+    blending:THREE.AdditiveBlending,
+    uniforms:{
+      uTime:{value:0},
+      uParallax:{value:new THREE.Vector2(0,0)},
+      uSize:{value: lowPower? 26.0 : 34.0},
+    },
+    vertexShader:`
+      uniform float uTime;
+      uniform vec2 uParallax;
+      uniform float uSize;
+      attribute float aRandom;
+      varying float vRandom;
+      void main(){
+        vRandom = aRandom;
+        vec3 pos = position;
+        float t = uTime * (0.15 + aRandom*0.25);
+        pos.x += sin(t + aRandom*6.2831) * (1.4 + aRandom*1.6);
+        pos.y += cos(t*0.8 + aRandom*6.2831) * (1.0 + aRandom*1.2) + uTime*0.06*(0.4+aRandom);
+        pos.y = mod(pos.y + 8.0, 16.0) - 8.0;
+        pos.x += uParallax.x * (1.0 - aRandom) * 1.5;
+        pos.y += uParallax.y * (1.0 - aRandom) * 1.0;
+        vec4 mv = modelViewMatrix * vec4(pos,1.0);
+        gl_PointSize = uSize * (1.0/-mv.z) * (0.4 + aRandom*1.1);
+        gl_Position = projectionMatrix * mv;
+      }
+    `,
+    fragmentShader:`
+      precision mediump float;
+      varying float vRandom;
+      void main(){
+        vec2 uv = gl_PointCoord - 0.5;
+        float d = length(uv);
+        float alpha = smoothstep(0.5, 0.0, d);
+        vec3 embers = mix(vec3(0.93,0.14,0.11), vec3(1.0,0.83,0.10), vRandom);
+        gl_FragColor = vec4(embers, alpha*0.75);
+      }
+    `
+  });
+  const particles = new THREE.Points(pGeo, pMat);
+  scene.add(particles);
+
+  // ---- GLSL "liquid heat" distortion plane (revealed near BURGERS) ----
+  const heatMat = new THREE.ShaderMaterial({
+    transparent:true,
+    depthWrite:false,
+    uniforms:{ uTime:{value:0}, uOpacity:{value:0.0} },
+    vertexShader:`
+      varying vec2 vUv;
+      void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }
+    `,
+    fragmentShader:`
+      precision mediump float;
+      varying vec2 vUv;
+      uniform float uTime; uniform float uOpacity;
+      float noise(vec2 p){
+        return fract(sin(dot(p, vec2(41.3,289.1)) + uTime*0.6) * 43758.5453);
+      }
+      void main(){
+        vec2 uv = vUv;
+        float warp = noise(uv*6.0 + uTime*0.15) * 0.03;
+        uv.x += warp; uv.y += warp*0.6;
+        float d = distance(uv, vec2(0.5));
+        vec3 col = mix(vec3(0.90,0.10,0.08), vec3(0.05,0.02,0.02), smoothstep(0.1,0.75,d));
+        float vign = smoothstep(0.9,0.2,d);
+        gl_FragColor = vec4(col, uOpacity * vign * 0.5);
+      }
+    `
+  });
+  const heatPlane = new THREE.Mesh(new THREE.PlaneGeometry(30,20), heatMat);
+  heatPlane.position.set(0,0,-6);
+  scene.add(heatPlane);
+
+  /* ---- mouse parallax ---- */
+  const mouse = new THREE.Vector2(0,0);
+  window.addEventListener('pointermove', (e)=>{
+    mouse.x = (e.clientX/window.innerWidth - 0.5) * 2;
+    mouse.y = (e.clientY/window.innerHeight - 0.5) * 2;
+  });
+
+  /* ---- real burger: organic float + pointer parallax + scroll choreography ---- */
+  const realBurger = document.getElementById('realBurger');
+  const realBurgerImg = realBurger ? realBurger.querySelector('img') : null;
+  let burgerScrollTrigger = null;
+  let burgerTimeline = null;
+
+  if(realBurger && realBurgerImg && hasGSAP){
+    const burger = {
+      // Scroll pose
+      sx:0, sy:0, sr:0, ss:1, sa:1,
+      // Smoothed render pose
+      x:0, y:0, r:0, s:1, a:1,
+      // Pointer target
+      px:0, py:0, pr:0,
+      // Smoothed pointer pose
+      pxi:0, pyi:0, pri:0
+    };
+
+    gsap.set(realBurger, { autoAlpha:1 });
+
+    const isMobile = () => window.matchMedia('(max-width:760px)').matches;
+    const isTiny = () => window.matchMedia('(max-width:430px)').matches;
+
+    // One transform only: this prevents floating, pointer parallax and scroll
+    // from fighting over the same CSS transform property.
+    function renderBurger(time){
+      const mobile = isMobile();
+      const amp = mobile ? 0.48 : 1;
+      const floatY = reducedMotion ? 0 : Math.sin(time * 1.18) * 9.5 * amp + Math.sin(time * 0.53 + 1.7) * 4.2 * amp + Math.sin(time * 2.35) * 1.2 * amp;
+      const floatX = reducedMotion ? 0 : Math.sin(time * 0.49 + 0.8) * 4.5 * amp + Math.sin(time * 1.07) * 1.1 * amp;
+      const floatR = reducedMotion ? 0 : Math.sin(time * 0.72) * 1.15 * amp + Math.sin(time * 0.31 + 2) * 0.5 * amp;
+
+      // Smooth physical interpolation: scroll reacts immediately, but the image has inertia.
+      const ease = mobile ? 0.115 : 0.085;
+      burger.x += (burger.sx - burger.x) * ease;
+      burger.y += (burger.sy - burger.y) * ease;
+      burger.r += (burger.sr - burger.r) * ease;
+      burger.s += (burger.ss - burger.s) * ease;
+      burger.a += (burger.sa - burger.a) * ease;
+      burger.pxi += (burger.px - burger.pxi) * (mobile ? 0.10 : 0.065);
+      burger.pyi += (burger.py - burger.pyi) * (mobile ? 0.10 : 0.065);
+      burger.pri += (burger.pr - burger.pri) * (mobile ? 0.10 : 0.065);
+
+      const x = burger.x + burger.pxi + floatX;
+      const y = burger.y + burger.pyi + floatY;
+      const r = burger.r + burger.pri + floatR;
+      const s = burger.s;
+      realBurger.style.opacity = String(burger.a);
+      realBurger.style.transform = `translate3d(${x}px,${y}px,0) rotate(${r}deg) scale(${s})`;
+    }
+
+    // Pointer parallax: deliberately subtle so the burger feels physical, not
+    // like a cursor-following sticker. Disable it on touch devices.
+    const onBurgerPointer = (e)=>{
+      if(reducedMotion || isCoarse) return;
+      const nx = (e.clientX / window.innerWidth - 0.5) * 2;
+      const ny = (e.clientY / window.innerHeight - 0.5) * 2;
+      burger.px = nx * 22;
+      burger.py = ny * 16;
+      burger.pr = nx * 1.5;
+    };
+    window.addEventListener('pointermove', onBurgerPointer, {passive:true});
+
+    // Touch devices get a very small autonomous drift instead of pointer
+    // parallax; this keeps the composition alive without hijacking scrolling.
+    let floatTicker = null;
+    if(!reducedMotion){
+      floatTicker = (t)=>renderBurger(t);
+      gsap.ticker.add(floatTicker);
+    } else {
+      renderBurger(0);
+    }
+
+    function buildBurgerScroll(){
+      if(burgerTimeline){ burgerTimeline.kill(); burgerTimeline = null; }
+      if(burgerScrollTrigger){ burgerScrollTrigger.kill(); burgerScrollTrigger = null; }
+      if(reducedMotion) return;
+
+      const mobile = isMobile();
+      const tiny = isTiny();
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+
+      // Values are intentionally expressed from viewport size so the same
+      // choreography scales naturally from laptop to ultrawide and mobile.
+      const pose = mobile ? {
+        hero:{x:0, y:0, r:0, s:1, a:1},
+        sides:{x:-vw*0.055, y:vh*0.025, r:-3, s:1.02, a:.96},
+        burgers:{x:-vw*0.12, y:vh*0.11, r:5, s:0.91, a:.86},
+        fake:{x:-vw*0.19, y:vh*0.18, r:-4, s:0.76, a:.08}
+      } : {
+        hero:{x:0, y:0, r:0, s:1, a:1},
+        sides:{x:-vw*0.08, y:vh*0.04, r:-4.5, s:1.05, a:.98},
+        burgers:{x:-vw*0.19, y:vh*0.16, r:6, s:.98, a:.88},
+        fake:{x:-vw*0.31, y:vh*0.27, r:-5, s:.82, a:.12}
+      };
+
+      Object.assign(burger, {sx:pose.hero.x, sy:pose.hero.y, sr:pose.hero.r, ss:pose.hero.s, sa:pose.hero.a});
+
+      burgerTimeline = gsap.timeline({
+        defaults:{ease:'none'},
+        scrollTrigger:{
+          trigger:'#hero',
+          start:'top top',
+          endTrigger:'#fakemeat',
+          end: tiny ? 'top 72%' : (mobile ? 'top 68%' : 'top 58%'),
+          scrub:1.15,
+          invalidateOnRefresh:true,
+          onUpdate:self=>{
+            // ScrollTrigger drives targets; render loop provides the physical smoothing.
+            self.animation.progress(self.progress);
+          }
+        }
+      });
+      burgerScrollTrigger = burgerTimeline.scrollTrigger;
+
+      burgerTimeline
+        .to(burger, {duration:0.26, sx:pose.sides.x, sy:pose.sides.y, sr:pose.sides.r, ss:pose.sides.s})
+        .to(burger, {duration:0.36, sx:pose.burgers.x, sy:pose.burgers.y, sr:pose.burgers.r, ss:pose.burgers.s})
+        .to(burger, {duration:0.38, sx:pose.fake.x, sy:pose.fake.y, sr:pose.fake.r, ss:pose.fake.s});
+    }
+
+    buildBurgerScroll();
+
+    // Refresh the choreography after orientation/viewport changes.
+    window.addEventListener('resize', ()=>{
+      clearTimeout(window.__burgerResizeTimer);
+      window.__burgerResizeTimer = setTimeout(()=>{
+        buildBurgerScroll();
+        if(hasST) ScrollTrigger.refresh();
+      }, 180);
+    }, {passive:true});
+  }
+
+  /* ---- scroll-driven cinematic camera / rig ---- */
+  if(hasGSAP && hasST && !reducedMotion){
+    gsap.to(camera.position, {
+      z: 5.2, y: -0.2, x: -1.1,
+      ease:'none',
+      scrollTrigger:{ trigger:'#fries', start:'top bottom', end:'top top', scrub:0.6 }
+    });
+    // The burger is a real transparent PNG; scroll animation is handled below.
+    gsap.to(heatMat.uniforms.uOpacity, {
+      value: 1.0,
+      ease:'none',
+      scrollTrigger:{ trigger:'#burgers', start:'top 70%', end:'top 10%', scrub:0.6 }
+    });
+    gsap.to(heatMat.uniforms.uOpacity, {
+      value: 0.0,
+      ease:'none',
+      scrollTrigger:{ trigger:'#fakemeat', start:'top bottom', end:'top center', scrub:0.6 }
+    });
+    // Cooler, "veg" lighting shift for the fake-meat section
+    gsap.to(fillLight.color, {
+      r: 0.3, g: 0.85, b: 0.45,
+      ease:'none',
+      scrollTrigger:{ trigger:'#fakemeat', start:'top bottom', end:'top center', scrub:0.6 }
+    });
+  }
+
+  /* ---- render loop with pause-when-hidden ---- */
+  const clock = new THREE.Clock();
+  let rafId = null;
+  function tick(){
+    const t = clock.getElapsedTime();
+    pMat.uniforms.uTime.value = t;
+    pMat.uniforms.uParallax.value.set(mouse.x, -mouse.y);
+    heatMat.uniforms.uTime.value = t;
+
+
+    renderer.render(scene, camera);
+    rafId = requestAnimationFrame(tick);
+  }
+  tick();
+
+  document.addEventListener('visibilitychange', ()=>{
+    if(document.hidden){ if(rafId) cancelAnimationFrame(rafId); rafId=null; }
+    else if(!rafId){ tick(); }
+  });
+
+  /* ---- resize ---- */
+  let resizeTimeout;
+  window.addEventListener('resize', ()=>{
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(()=>{
+      camera.aspect = window.innerWidth/window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      if(hasST) ScrollTrigger.refresh();
+    }, 150);
+  });
+
+  /* ---- cleanup / dispose ---- */
+  function disposeScene(){
+    [pGeo].forEach(g=>g.dispose());
+    [pMat, heatMat].forEach(m=>m.dispose());
+    pmrem.dispose();
+    renderer.dispose();
+  }
+  window.addEventListener('pagehide', disposeScene);
+
+}else{
+  console.warn('[BLSD] WebGL not available — showing static gradient background, menu remains fully usable.');
+}
+
+/* ---- loader out ---- */
+window.addEventListener('load', ()=>{
+  setTimeout(()=>{ document.getElementById('loader').classList.add('hide'); }, 350);
+});
+setTimeout(()=>{ document.getElementById('loader').classList.add('hide'); }, 3500);
+</script>
+</body>
+</html>
